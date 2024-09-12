@@ -246,7 +246,7 @@ console.log('Min gourmetsallad har uuid: ' + myGourmetSalad.uuid);
 
 
 
- */
+ */ 
 
 
 console.log('\n--- Assignment 7 ---------------------------------------')
