@@ -2,17 +2,24 @@ import { useId, useState } from 'react';
 import inventory from './inventory.mjs';
 import { useCallback } from 'react';
 import Salad from './lab1.mjs'
+import { useOutletContext } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
-function ComposeSalad(props) {
-  const foundationList = Object.keys(props.inventory).filter(name => props.inventory[name].foundation);
-  const proteinList = Object.keys(props.inventory).filter(name => props.inventory[name].protein);
-  const dressingList = Object.keys(props.inventory).filter(name => props.inventory[name].dressing);
-  const extraList = Object.keys(props.inventory).filter(name => props.inventory[name].extra);
 
-  const [foundation, setFoundation] = useState('Pasta');
-  const [protein, setProtein] = useState('Kycklingfilé');
-  const [dressing, setDressing] = useState('Ceasardressing');
-  const [extras, setExtra] = useState({ Bacon: true, Fetaost: true });
+function ComposeSalad() {
+  const navigate = useNavigate()
+  const { inventory, handleSaladSubmit } = useOutletContext();
+  const foundationList = Object.keys(inventory).filter(name => inventory[name].foundation);
+  const proteinList = Object.keys(inventory).filter(name => inventory[name].protein);
+  const dressingList = Object.keys(inventory).filter(name => inventory[name].dressing);
+  const extraList = Object.keys(inventory).filter(name => inventory[name].extra);
+
+  const [foundation, setFoundation] = useState(" ");
+  const [protein, setProtein] = useState(" ");
+  const [dressing, setDressing] = useState(" ");
+  const [extras, setExtra] = useState({});
+  const [touched, setTouched] = useState(false);
+
  
 
   const handleFoundationChange = (event) => {
@@ -27,33 +34,54 @@ function ComposeSalad(props) {
 
   const handleSubmit = (event) => {
    event.preventDefault();
-   const salad  = new Salad();
-   salad.add(foundation, props.inventory[foundation]);
-   salad.add(protein, props.inventory[protein]);
+   setTouched(true);
+   const extraCount = Object.values(extras).filter(v => v).length;
    
+   if((extraCount >= 2) && (event.target.checkValidity())){
+
+   
+   const salad  = new Salad();
+   salad.add(foundation, inventory[foundation]);
+   salad.add(protein, inventory[protein]);
 
    
    Object.keys(extras).forEach(extra => {
     if(extras[extra]){
-      salad.add(extra, props.inventory[extra])
+      salad.add(extra, inventory[extra])
     }})
-    salad.add(dressing, props.inventory[dressing]);
+    salad.add(dressing, inventory[dressing]);
 
     
 
     // Reset form fields to their default states
-    setFoundation('Pasta');
-    setProtein('Kycklingfilé');
-    setExtra({ Bacon: true, Fetaost: true });
-    setDressing('Ceasardressing');
-    //collect current states
+    setFoundation("");
+    setProtein("");
+    setExtra({});
+    setDressing("");
+    //collect current s
+    setTouched(false)
     // const saladInventory = foundation + protein + extras + dressing;   
     //send data to app
     //reset the from to default states
 
-    props.handleSaladSubmit(salad);
+    handleSaladSubmit(salad);
+    navigate(`/view-order/confirm/${salad.uuid}`);
+
+  }else{
+    if(!(extraCount >= 2)){
+      alert('You must select two or more extras');
+
+    }
+    if(!event.target.checkValidity()){
+      alert('Choose foundation, prots and dress')
+
+    }
+    
+    
+  }
    
   }
+  
 
 
 
@@ -74,11 +102,11 @@ function ComposeSalad(props) {
     //onsole.log(value);
     //console.log(checked);
 
-    const selectedCount = Object.values(extras).filter(v => v).length;
-    if(checked && selectedCount >= 2){
-      alert('You can only select two options');
+   /* const selectedCount = Object.values(extras).filter(v => v).length;
+    if(checked && selectedCount < 2){
+      alert('You must select two or more options');
       return;
-    }
+    }*/
     //console.log(newExtra);
     if (checked) {
       //setExtra([...extras, value]);
@@ -106,17 +134,19 @@ function ComposeSalad(props) {
     return(
       <div>
         <label htmlFor={id} className='form-label'>{label}</label>
-        <select onChange={onChange} value={value} className='form-select' id={id}>
+        <select required onChange={onChange} value={value} className='form-select' id={id}>
+        <option value="">Select an option</option> 
           {options.map((option, index) => (
             <option
             key = {index}
             value = {option}>
-              {option}{" ("}{props.inventory[option].price}{" Kr)"}
+              {option}{" ("}{inventory[option].price}{" Kr)"}
             </option>
           ))}
 
         
         </select>
+        <div className="invalid-feedback">Fel input</div>  
       </div>
     );
   }
@@ -126,7 +156,7 @@ function ComposeSalad(props) {
       <div className="row h-200 p-5 bg-light border rounded-3">
         <h2>Välj innehållet i din sallad</h2>
         
-        <form onSubmit={handleSubmit}>
+        <form noValidate className={touched ? "was-validated" : ""} onSubmit={handleSubmit}>
         <fieldset className="col-md-12">
           <Select label="Välj Bas"
           onChange={handleFoundationChange}
@@ -162,7 +192,7 @@ function ComposeSalad(props) {
               <label 
               htmlFor={`checkbox-${option}`}
               >
-                {option}{" ("}{props.inventory[option].price}{" Kr)"}
+                {option}{" ("}{inventory[option].price}{" Kr)"}
                 </label>
                 </div>
               ))}
@@ -182,9 +212,11 @@ function ComposeSalad(props) {
 
         <fieldset className="col-md-12">
         <button type="submit" onSubmit={handleSubmit}>Submit</button>
+
+  
         </fieldset>
         </form>
-            
+         
 
 
 

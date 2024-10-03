@@ -4,6 +4,25 @@ import ComposeSalad from './ComposeSalad';
 import Salad from './lab1.mjs'
 import { useState, useCallback } from 'react';
 import ViewOrder from './ViewOrder';
+import { Outlet } from 'react-router-dom';
+import Navbar from './NavBar';
+
+
+function Header(){
+  return(
+    <header className="pb-3 mb-4 border-bottom">
+    <span className="fs-4">Min egen salladsbar</span>
+  </header>
+  )
+}
+function Footer(){
+  return(
+    <footer className="pt-3 mt-4 text-muted border-top">
+    EDAF90 - webprogrammering
+  </footer>
+  )
+
+}
 
 function App() {
   let extras = Object.keys(inventory).filter(name => inventory[name].extra);
@@ -12,22 +31,20 @@ function App() {
     //const newSalads = { ...salads, [event.target.name]: event.target.checked}
     setSalads(prevSalads => [...prevSalads, salad]);
     console.log(salads);
+
+
+
+    //<ViewOrder salads={salads}></ViewOrder>
+    //<ComposeSalad inventory={inventory} handleSaladSubmit={handleSaladSubmit}></ComposeSalad>
     
   },[]);
   return (
     <div className="container py-4">
-      <header className="pb-3 mb-4 border-bottom">
-        <span className="fs-4">Min egen salladsbar</span>
-      </header>
+      <Header />
+      <Navbar />
+      <Outlet context={{inventory, handleSaladSubmit, salads}}/>
+      <Footer />
 
-        <ViewOrder salads={salads}></ViewOrder>
-
-
-      <ComposeSalad inventory={inventory} handleSaladSubmit={handleSaladSubmit}></ComposeSalad>
-
-      <footer className="pt-3 mt-4 text-muted border-top">
-        EDAF90 - webprogrammering
-      </footer>
     </div>
   );
 }
